@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>本地微博</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <h1>本地微博</h1>
+          <p>纯 HTML + CSS + JavaScript，数据保存在当前浏览器。</p>
+        </div>
+      </header>
+
+      <section class="composer" aria-labelledby="composer-title">
+        <h2 id="composer-title">发布动态</h2>
+        <form id="postForm">
+          <label class="sr-only" for="postContent">动态内容</label>
+          <textarea
+            id="postContent"
+            name="content"
+            maxlength="280"
+            rows="4"
+            placeholder="分享一点新鲜事..."
+            required
+          ></textarea>
+          <div class="composer-actions">
+            <span id="counter" class="counter">0 / 280</span>
+            <button type="submit">发布</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="feed" aria-labelledby="feed-title">
+        <div class="feed-header">
+          <h2 id="feed-title">动态列表</h2>
+          <button id="clearAll" class="secondary" type="button">清空</button>
+        </div>
+        <div id="emptyState" class="empty">还没有动态，先发布一条。</div>
+        <ul id="postList" class="post-list"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
