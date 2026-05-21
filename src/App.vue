@@ -44,6 +44,14 @@ async function handleClear() {
   }
 }
 
+async function handleLike(postId) {
+  await postsStore.likePost(postId);
+}
+
+async function handleFavorite(postId) {
+  await postsStore.toggleFavorite(postId);
+}
+
 </script>
 
 <template>
@@ -122,6 +130,26 @@ async function handleClear() {
                   <time :datetime="post.createdAt">{{ formatTime(post.createdAt) }}</time>
                 </div>
                 <p class="post-content">{{ post.content }}</p>
+                <div class="post-actions">
+                  <span class="post-likes">点赞 {{ post.likes }}</span>
+                  <button
+                    class="post-action"
+                    type="button"
+                    :aria-label="`点赞动态：${post.content}`"
+                    @click="handleLike(post.id)"
+                  >
+                    点赞
+                  </button>
+                  <button
+                    class="post-action"
+                    :class="{ favorited: post.favorited }"
+                    type="button"
+                    :aria-label="`${post.favorited ? '取消收藏' : '收藏'}动态：${post.content}`"
+                    @click="handleFavorite(post.id)"
+                  >
+                    {{ post.favorited ? "已收藏" : "收藏" }}
+                  </button>
+                </div>
               </div>
             </li>
           </ul>

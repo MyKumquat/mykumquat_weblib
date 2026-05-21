@@ -24,6 +24,8 @@ describe("posts store", () => {
       {
         id: "stored-1",
         content: "stored post",
+        likes: 2,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ];
@@ -40,6 +42,8 @@ describe("posts store", () => {
     const post = {
       id: "created-1",
       content: "hello life",
+      likes: 0,
+      favorited: false,
       createdAt: "2026-05-21T00:00:00.000Z"
     };
     fetch.mockResolvedValueOnce(mockJsonResponse({ posts: [post] }));
@@ -77,6 +81,8 @@ describe("posts store", () => {
       {
         id: "post-1",
         content: "one",
+        likes: 0,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ];
@@ -98,6 +104,8 @@ describe("posts store", () => {
       {
         id: "existing-1",
         content: "existing",
+        likes: 1,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ];
@@ -108,6 +116,8 @@ describe("posts store", () => {
       {
         id: "existing-1",
         content: "existing",
+        likes: 1,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ]);
@@ -133,6 +143,8 @@ describe("posts store", () => {
       {
         id: "post-1",
         content: "one",
+        likes: 0,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ];
@@ -143,6 +155,106 @@ describe("posts store", () => {
       {
         id: "post-1",
         content: "one",
+        likes: 0,
+        favorited: false,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ]);
+  });
+
+  it("likes a post through the REST API", async () => {
+    const posts = [
+      {
+        id: "post-1",
+        content: "one",
+        likes: 2,
+        favorited: false,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ];
+    fetch.mockResolvedValueOnce(mockJsonResponse({ posts }));
+    const store = usePostsStore();
+
+    await store.likePost("post-1");
+
+    expect(fetch).toHaveBeenCalledWith("/api/posts/post-1/like", {
+      method: "PATCH"
+    });
+    expect(store.posts).toEqual(posts);
+  });
+
+  it("toggles favorite state through the REST API", async () => {
+    const posts = [
+      {
+        id: "post-1",
+        content: "one",
+        likes: 1,
+        favorited: true,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ];
+    fetch.mockResolvedValueOnce(mockJsonResponse({ posts }));
+    const store = usePostsStore();
+
+    await store.toggleFavorite("post-1");
+
+    expect(fetch).toHaveBeenCalledWith("/api/posts/post-1/favorite", {
+      method: "PATCH"
+    });
+    expect(store.posts).toEqual(posts);
+  });
+
+  it("does not pretend like succeeded when the request fails", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false
+    });
+    const store = usePostsStore();
+    store.posts = [
+      {
+        id: "post-1",
+        content: "one",
+        likes: 1,
+        favorited: false,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ];
+
+    await expect(store.likePost("post-1")).rejects.toThrow("点赞动态失败");
+
+    expect(store.posts).toEqual([
+      {
+        id: "post-1",
+        content: "one",
+        likes: 1,
+        favorited: false,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ]);
+  });
+
+  it("does not pretend favorite succeeded when the request fails", async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false
+    });
+    const store = usePostsStore();
+    store.posts = [
+      {
+        id: "post-1",
+        content: "one",
+        likes: 1,
+        favorited: false,
+        createdAt: "2026-05-21T00:00:00.000Z"
+      }
+    ];
+
+    await expect(store.toggleFavorite("post-1")).rejects.toThrow("更新收藏状态失败");
+
+    expect(store.posts).toEqual([
+      {
+        id: "post-1",
+        content: "one",
+        likes: 1,
+        favorited: false,
         createdAt: "2026-05-21T00:00:00.000Z"
       }
     ]);

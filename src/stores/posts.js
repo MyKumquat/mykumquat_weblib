@@ -52,6 +52,24 @@ export const usePostsStore = defineStore("posts", {
 
       this.posts = [];
       return true;
+    },
+    async likePost(id) {
+      const response = await fetch(`${POSTS_API_URL}/${id}/like`, {
+        method: "PATCH"
+      });
+      assertSuccessfulResponse(response, "点赞动态失败");
+
+      const body = await response.json();
+      this.posts = readPostsFromEnvelope(body);
+    },
+    async toggleFavorite(id) {
+      const response = await fetch(`${POSTS_API_URL}/${id}/favorite`, {
+        method: "PATCH"
+      });
+      assertSuccessfulResponse(response, "更新收藏状态失败");
+
+      const body = await response.json();
+      this.posts = readPostsFromEnvelope(body);
     }
   }
 });

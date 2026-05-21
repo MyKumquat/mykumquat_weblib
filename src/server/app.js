@@ -29,6 +29,8 @@ app.post("/api/posts", async (c) => {
   const post = {
     id: String(nextPostId),
     content,
+    likes: 0,
+    favorited: false,
     createdAt: new Date().toISOString()
   };
 
@@ -36,6 +38,32 @@ app.post("/api/posts", async (c) => {
   posts = [post, ...posts];
 
   return c.json(postsResponse(), 201);
+});
+
+app.patch("/api/posts/:id/like", (c) => {
+  const id = c.req.param("id");
+  const post = posts.find((item) => item.id === id);
+
+  if (!post) {
+    return c.json({ error: "post not found" }, 404);
+  }
+
+  post.likes += 1;
+
+  return c.json(postsResponse());
+});
+
+app.patch("/api/posts/:id/favorite", (c) => {
+  const id = c.req.param("id");
+  const post = posts.find((item) => item.id === id);
+
+  if (!post) {
+    return c.json({ error: "post not found" }, 404);
+  }
+
+  post.favorited = !post.favorited;
+
+  return c.json(postsResponse());
 });
 
 app.delete("/api/posts", (c) => {
