@@ -19,6 +19,13 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
+function formatDate(value) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(value));
+}
+
 function handleSubmit() {
   const published = postsStore.publish(draft.value);
 
@@ -43,7 +50,7 @@ function handleClear() {
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">微</span>
+        <span class="brand-mark" aria-hidden="true"></span>
         <h1>Lifejourney</h1>
       </div>
       <div class="topbar-copy">
@@ -56,17 +63,17 @@ function handleClear() {
         <div class="profile-card">
           <div class="profile-avatar" aria-hidden="true">我</div>
           <div>
-            <strong>我的主页</strong>
+            <strong>我的时间线</strong>
             <span>本地账号</span>
           </div>
         </div>
-        <p>所有动态只保存在这台设备的浏览器里。</p>
+        <p>所有旅程片段只保存在这台设备的浏览器里。</p>
       </aside>
 
       <div class="main-column">
         <section class="composer" aria-labelledby="composer-title">
           <div class="section-title">
-            <h2 id="composer-title">发布动态</h2>
+            <h2 id="composer-title">今日片段</h2>
             <span>最多 280 字</span>
           </div>
           <form @submit.prevent="handleSubmit">
@@ -90,8 +97,8 @@ function handleClear() {
         <section class="feed" aria-labelledby="feed-title">
           <div class="feed-header">
             <div class="section-title">
-              <h2 id="feed-title">动态列表</h2>
-              <span>本地动态</span>
+              <h2 id="feed-title">旅程记录</h2>
+              <span>我的时间线</span>
             </div>
             <button
               class="secondary"
@@ -102,13 +109,16 @@ function handleClear() {
               清空
             </button>
           </div>
-          <div v-if="postsStore.posts.length === 0" class="empty">还没有动态，先发布一条。</div>
+          <div v-if="postsStore.posts.length === 0" class="empty">Just enjoy.</div>
           <ul v-else class="post-list">
             <li v-for="post in postsStore.posts" :key="post.id" class="post">
-              <div class="post-avatar" aria-hidden="true">我</div>
+              <div class="timeline-marker" aria-hidden="true">
+                <span class="timeline-dot"></span>
+                <span class="timeline-date">{{ formatDate(post.createdAt) }}</span>
+              </div>
               <div class="post-body">
                 <div class="post-meta">
-                  <span class="post-author">我</span>
+                  <span class="post-author">旅程片段</span>
                   <time :datetime="post.createdAt">{{ formatTime(post.createdAt) }}</time>
                 </div>
                 <p class="post-content">{{ post.content }}</p>
