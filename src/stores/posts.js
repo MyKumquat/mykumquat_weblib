@@ -1,25 +1,15 @@
 import { defineStore } from "pinia";
 
-export const STORAGE_KEY = "local-weibo-posts";
+const POSTS_API_URL = "/api/posts";
 
-function readPosts() {
-  const rawPosts = localStorage.getItem(STORAGE_KEY);
-
-  if (!rawPosts) {
-    return [];
-  }
-
-  try {
-    const posts = JSON.parse(rawPosts);
-    return Array.isArray(posts) ? posts : [];
-  } catch (error) {
-    console.error("读取本地动态失败", error);
-    return [];
+function assertSuccessfulResponse(response, message) {
+  if (!response.ok) {
+    throw new Error(message);
   }
 }
 
-function persistPosts(posts) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+function readPostsFromEnvelope(body) {
+  return Array.isArray(body?.posts) ? body.posts : [];
 }
 
 export const usePostsStore = defineStore("posts", {
@@ -27,27 +17,41 @@ export const usePostsStore = defineStore("posts", {
     posts: []
   }),
   actions: {
-    hydrate() {
-      this.posts = readPosts();
+    async hydrate() {
+      const response = await fetch(POSTS_API_URL);
+      assertSuccessfulResponse(response, "加载动态失败");
+
+      const body = await response.json();
+      this.posts = readPostsFromEnvelope(body);
     },
-    publish(content) {
+    async publish(content) {
       const trimmedContent = content.trim();
 
       if (!trimmedContent) {
         return false;
       }
 
-      this.posts.unshift({
-        id: Date.now().toString(),
-        content: trimmedContent,
-        createdAt: new Date().toISOString()
+      const response = await fetch(POSTS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ content: trimmedContent })
       });
-      persistPosts(this.posts);
+      assertSuccessfulResponse(response, "发布动态失败");
+
+      const body = await response.json();
+      this.posts = readPostsFromEnvelope(body);
       return true;
     },
-    clear() {
+    async clear() {
+      const response = await fetch(POSTS_API_URL, {
+        method: "DELETE"
+      });
+      assertSuccessfulResponse(response, "清空动态失败");
+
       this.posts = [];
-      persistPosts(this.posts);
+      return true;
     }
   }
 });

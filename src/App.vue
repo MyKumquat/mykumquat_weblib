@@ -26,21 +26,21 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-function handleSubmit() {
-  const published = postsStore.publish(draft.value);
+async function handleSubmit() {
+  const published = await postsStore.publish(draft.value);
 
   if (published) {
     draft.value = "";
   }
 }
 
-function handleClear() {
+async function handleClear() {
   if (postsStore.posts.length === 0) {
     return;
   }
 
   if (window.confirm("确定清空所有动态吗？")) {
-    postsStore.clear();
+    await postsStore.clear();
   }
 }
 
@@ -54,7 +54,7 @@ function handleClear() {
         <h1>Lifejourney</h1>
       </div>
       <div class="topbar-copy">
-        <p>记录此刻，保存在当前浏览器。</p>
+        <p>记录此刻，保存在服务端内存。</p>
       </div>
     </header>
 
@@ -67,7 +67,7 @@ function handleClear() {
             <span>本地账号</span>
           </div>
         </div>
-        <p>所有旅程片段只保存在这台设备的浏览器里。</p>
+        <p>所有旅程片段保存在当前 API 服务进程内。</p>
       </aside>
 
       <div class="main-column">

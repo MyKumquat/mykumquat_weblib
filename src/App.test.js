@@ -1,8 +1,14 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia } from "pinia";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App.vue";
-import { STORAGE_KEY } from "./stores/posts";
+
+function mockJsonResponse(data) {
+  return {
+    ok: true,
+    json: vi.fn().mockResolvedValue(data)
+  };
+}
 
 function mountApp() {
   return mount(App, {
@@ -14,34 +20,62 @@ function mountApp() {
 
 describe("App", () => {
   beforeEach(() => {
-    localStorage.clear();
+    vi.stubGlobal("fetch", vi.fn());
   });
 
-  it("renders posts loaded from local storage", () => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify([
-        {
-          id: "stored-1",
-          content: "stored post",
-          createdAt: "2026-05-21T00:00:00.000Z"
-        }
-      ])
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("renders posts loaded from the REST API", async () => {
+    fetch.mockResolvedValueOnce(
+      mockJsonResponse({
+        posts: [
+          {
+            id: "stored-1",
+            content: "stored post",
+            createdAt: "2026-05-21T00:00:00.000Z"
+          }
+        ]
+      })
     );
 
     const wrapper = mountApp();
+    await flushPromises();
 
+    expect(fetch).toHaveBeenCalledWith("/api/posts");
     expect(wrapper.text()).toContain("stored post");
   });
 
-  it("publishes a post through the form and persists it", async () => {
+  it("publishes a post through the form and renders the created post", async () => {
+    fetch
+      .mockResolvedValueOnce(mockJsonResponse({ posts: [] }))
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          posts: [
+            {
+              id: "created-1",
+              content: "new journey",
+              createdAt: "2026-05-21T00:00:00.000Z"
+            }
+          ]
+        })
+      );
     const wrapper = mountApp();
+    await flushPromises();
 
     await wrapper.get("textarea").setValue("new journey");
     await wrapper.get("form").trigger("submit");
+    await flushPromises();
 
     expect(wrapper.text()).toContain("new journey");
-    expect(localStorage.getItem(STORAGE_KEY)).toContain("new journey");
+    expect(fetch).toHaveBeenLastCalledWith("/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ content: "new journey" })
+    });
     expect(wrapper.get("textarea").element.value).toBe("");
   });
 });
