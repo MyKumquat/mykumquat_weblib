@@ -50,6 +50,14 @@
     var item = document.createElement("li");
     item.className = "post";
 
+    var avatar = document.createElement("div");
+    avatar.className = "post-avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = "我";
+
+    var body = document.createElement("div");
+    body.className = "post-body";
+
     var meta = document.createElement("div");
     meta.className = "post-meta";
 
@@ -66,7 +74,8 @@
     content.textContent = post.content;
 
     meta.append(author, time);
-    item.append(meta, content);
+    body.append(meta, content);
+    item.append(avatar, body);
 
     return item;
   }
